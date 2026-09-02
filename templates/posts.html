@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                <h2>{{ title }}</h2>
+                <a href="{{ url_for('edit_post') }}" class="btn filter-btn create h-fit ms-auto">Создать {{ action | lower }}</a>
+            </div>
+
+            <div class="row g-4">
+                {% if not posts%}
+                    <div class="col-12">
+                        <div class="card card-bg">
+                            <div class="card-body">
+                                <p class="card-text">Постов по запросу не найдено</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% for post in posts %}
+                    {% with type="fluid" %}
+                        {% include "partials/post_card.html" %}
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        </div>
+
+        {% include "partials/sidebar.html" %}
+    </div>
+</div>
+
+{% endblock %}
+

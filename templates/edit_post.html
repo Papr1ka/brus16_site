@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block extra_links %}
+<link rel="stylesheet" href="{{ url_for('static', path='/easymde.min.css') }}">
+<script src="{{ url_for('static', path='/easymde.min.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+{% if request.state.user %}
+<div class="container my-4">
+    <h1 class="text-primary-custom">Создание поста</h1>
+    <h4><span class="badge text-bg-secondary">{{ status }}</span></h4>
+    {% if status == "черновик" %}
+    <a href="{{ url_for('post', post_id=post_id) }}" class="btn btn-outline-primary-custom mb-4">
+        <i class="fa-solid fa-eye"></i>
+        Посмотреть результат
+    </a>
+    {% endif %}
+    <form action="{{ url_for('edit_post_with_id', post_id=post_id) }}" method="post" enctype="multipart/form-data">
+        <div class="mb-4">
+            {% for type, message in messages %}
+            <div class="alert alert-{{ type }}" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            <label for="title" class="form-label text-light">{{ form.title.label }}</label>
+            <input type="text" name="title" id="title" class="form-control" placeholder="{{ form.title.description }}" value="{{ form.title.data if form.title.data }}">
+            {% with errors=form.errors.title %}
+                {% include 'partials/form_errors.html' %}
+            {% endwith %}
+        </div>
+        <div class="mb-3">
+            <label for="type" class="form-label text-light">{{ form.type.label }}</label>
+            <select id="type" name="type" class="form-select">
+            {% for val, name in form.type.choices %}
+                <option value="{{ val }}">{{ name }}</option>
+            {% endfor %}
+            </select value="{{ form.type.data }}">
+            {% with errors=form.errors.type %}
+                {% include 'partials/form_errors.html' %}
+            {% endwith %}
+        </div>
+        <div class="mb-3">
+            <label for="summary" class="form-label text-light">{{ form.summary.label }}</label>
+            <textarea id="summary" name="summary" class="form-control" rows="7" placeholder="{{ form.summary.description }}">{{ form.summary.data }}</textarea>
+            {% with errors=form.errors.summary %}
+                {% include 'partials/form_errors.html' %}
+            {% endwith %}
+        </div>
+        <div class="mb-3">
+            {% if form.preview.data %}
+            <div class="my-2">
+                <img src="/{{ form.preview.data }}" alt="" style="max-width: 400px;">
+            </div>
+            {% endif %}
+            <label for="preview" class="form-label text-light">{{ form.preview.label }}</label>
+            <input type="file" name="preview" id="preview" class="form-control" accept="image/png, image/jpeg" value="{{ form.preview.data }}">
+            {% with errors=form.errors.preview %}
+                {% include 'partials/form_errors.html' %}
+            {% endwith %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label text-light">{{ form.content.label }}</label>
+            <textarea id="markdown" name="content" class="form-control" rows="10" placeholder="{{ form.content.description }}">{{ form.content.data }}</textarea>
+            {% with errors=form.errors.content %}
+                {% include 'partials/form_errors.html' %}
+            {% endwith %}
+        </div>
+        {% if status == "черновик" %}
+            <input type="submit" name="action" class="btn btn-outline-primary-custom me-2" value="Сохранить черновик">
+            <input type="submit" name="action" class="btn btn-primary-custom" value="Опубликовать">
+        {% endif %}
+        {% if status != "черновик" %}
+            <input type="submit" name="action" class="btn btn-outline-primary-custom me-2" value="Сохранить">
+            <input type="submit" name="action" class="btn btn-danger" value="Удалить">
+        {% endif %}
+    </form>
+    
+    <script>
+        const easymde = new EasyMDE({
+            element: document.getElementById('markdown'),
+            autosave: {
+                enabled: true,
+                uniqueId: "Brus-16-post-editor",
+            },
+            previewImagesInEditor: true,
+            uploadImage: true,
+            imageMaxSize: 10 * 1024 * 1024,
+            imageUploadEndpoint: "{{ url_for('post_upload_image', post_id=post_id) }}",
+            forceSync: true,
+        });
+    </script>
+</div>
+{% endif %}
+
+{% if not request.state.user %}
+<div class="container my-4">
+    <h1 class="text-primary-custom">Авторизуйтесь для создания поста</h1>
+</div>
+{% endif %}
+
+{% endblock %}
+

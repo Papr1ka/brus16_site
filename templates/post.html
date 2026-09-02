@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block extra_links %}
+<link rel="stylesheet" href="{{ url_for('static', path='/highlight.css') }}">
+{% endblock %}
+
+{% block meta %}
+<title>{{ (post.title | truncate (60)) if post.title else "Черновик" }}</title>
+<meta name="description" content="{{ (post.description | truncate(155)) if post.description }}">
+
+<meta property="og:title" content="{{ post.title }}">
+<meta property="og:description" content="{{ post.description }}">
+<meta property="og:url" content="{{ request.url }}">
+<meta property="og:type" content="article">
+{% if post.preview_url %}
+    <meta property="og:image" content="/{{ post.preview_url }}">
+{% endif %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="text-primary-custom">{{ post.title if post.title else "Черновик" }}</h1>
+    <p>
+        {% with object = post, comments = True %}
+            {% include 'partials/info.html' %}
+        {% endwith %}
+    </p>
+    {% if request.state.user %}
+        {% if request.state.user.id == post.user.id %}
+            {% if post.status != "published" %}
+            <h4 class="mb-4"><span class="badge text-bg-secondary">{{ post.status.value }}</span></h4>
+            {% endif %}
+            <a href="{{ url_for('edit_post_with_id', post_id=post.id) }}" class="btn btn-primary-custom mb-4 me-2">
+                <i class="fa-solid fa-pencil"></i>
+                <span>Изменить</span>
+            </a>
+        {% endif %}
+        {% if request.state.user.is_admin and post.status.name == "moderation" %}
+            <a href="{{ url_for('approve_post', post_id=post.id) }}" class="btn btn-primary-custom mb-4">
+                <i class="fa-solid fa-check"></i>
+                <span>Модерация пройдена</span>
+            </a>
+        {% endif %}
+
+    {% endif %}
+    {% if post.preview_url %}
+    <img src="/{{ post.preview_url }}" style="max-width: 100%;" class="mb-4">
+    {% endif %}
+    <div class="post-content">
+        {{ content | safe }}
+    </div>
+    {% with type="post", id=post.id %}
+        {% include 'partials/comments.html' %}
+    {% endwith %}
+</div>
+
+{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "{{ post.title }}",
+  "description": "{{ post.description }}",
+  {% if post.user %}
+  "author": {
+    "@type": "Person",
+    "name": "{{ post.user.username }}"
+  },
+  {% endif %}
+  "datePublished": "{{ post.created_at }}",
+  "dateModified": "{{ post.created_at }}"
+}
+</script>
+{% endblock %}

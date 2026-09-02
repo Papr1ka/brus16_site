@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="310" height="80" preserveAspectRatio="none" viewBox="0 0 310 80">
+  <!-- Б -->
+  <rect x="0" y="0" width="40" height="10" fill="#ff6131" />
+  <rect x="0" y="0" width="10" height="80" fill="#ff6131" />
+  <rect x="0" y="35" width="40" height="10" fill="#ff6131" />
+  <rect x="0" y="70" width="40" height="10" fill="#ff6131" />
+  <rect x="30" y="40" width="10" height="40" fill="#ff6131" />
+  
+  <!-- Р -->
+  <rect x="45" y="0" width="40" height="10" fill="#ffb263" />
+  <rect x="45" y="0" width="10" height="80" fill="#ffb263" />
+  <rect x="45" y="35" width="40" height="10" fill="#ffb263" />
+  <rect x="75" y="0" width="10" height="40" fill="#ffb263" />
+
+  <!-- У -->
+  <rect x="90" y="0" width="10" height="40" fill="#ffb263" />
+  <rect x="90" y="35" width="40" height="10" fill="#ffb263" />
+  <rect x="90" y="70" width="40" height="10" fill="#ffb263" />
+  <rect x="120" y="0" width="10" height="80" fill="#ffb263" />
+
+  <!-- С -->
+  <rect x="135" y="0" width="10" height="80" fill="#ffb263" />
+  <rect x="135" y="0" width="40" height="10" fill="#ffb263" />
+  <rect x="135" y="70" width="40" height="10" fill="#ffb263" />
+
+  <!-- - -->
+  <rect x="185" y="35" width="30" height="10" fill="#ffb263" />
+
+  <!-- 1 -->
+  <rect x="225" y="0" width="25" height="10" fill="#ff6131" />
+  <rect x="240" y="0" width="10" height="80" fill="#ff6131" />
+  <rect x="225" y="70" width="40" height="10" fill="#ff6131" />
+
+  <!-- 6 -->
+  <rect x="270" y="0" width="40" height="10" fill="#ffb263" />
+  <rect x="270" y="0" width="10" height="80" fill="#ffb263" />
+  <rect x="270" y="35" width="40" height="10" fill="#ffb263" />
+  <rect x="270" y="70" width="40" height="10" fill="#ffb263" />
+  <rect x="300" y="40" width="10" height="40" fill="#ffb263" />
+</svg>

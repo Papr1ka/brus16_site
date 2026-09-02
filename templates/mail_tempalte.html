@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+</head>
+<body style="margin:0; padding:0; background:#2C2C2C; font-family: Arial, Helvetica, sans-serif;">
+    <table align="center" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px; background:#1A1A1A; margin:20px auto; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+        <tr>
+            <td style="padding:30px 30px 20px;">
+                <h1 style="margin:0; font-size:24px; color:#CC4319; border-bottom:2px solid #FFB264; padding-bottom:12px;">
+                    Брус-16
+                </h1>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:0 30px 30px;">
+                <p style="font-size:16px; line-height:1.5; color:#f0f0f0; margin:0 0 16px;">
+                    Здравствуйте, <strong>{{ username }}</strong>!
+                </p>
+                <p style="font-size:16px; line-height:1.5; color:#f0f0f0; margin:0 0 16px;">
+                    Рады сообщить, что ваша {{ material_type }} <strong>«{{ material_title }}»</strong> прошла модерацию и теперь опубликована на сайте <strong>{{ site_name }}</strong>.
+                </p>
+                <p style="font-size:16px; line-height:1.5; color:#f0f0f0; margin:0 0 24px;">
+                    Другие пользователи могут её увидеть, запустить, оценить и оставить комментарии.
+                </p>
+                <table cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+                    <tr>
+                        <td align="center" style="background:#FFB264; border-radius:4px;">
+                            <a href="{{ material_url }}" style="display:inline-block; padding:12px 30px; font-size:16px; color:#1A1A1A; text-decoration:none; font-weight:bold; border-radius:4px;">
+                                👉 Посмотреть {{ material_type }}
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+                <p style="font-size:14px; line-height:1.5; color:#666; margin:0 0 8px;">
+                    Если ссылка не открывается, скопируйте её в браузер:
+                    <br>
+                    <a href="{{ material_url }}" style="color:#FFB264; word-break:break-all;">{{ material_url }}</a>
+                </p>
+                <hr style="border:0; border-top:1px solid #e0e0e0; margin:24px 0;">
+                <p style="font-size:14px; line-height:1.5; color:#888; margin:0;">
+                    Это письмо отправлено автоматически. Если у вас есть вопросы, напишите нам на 
+                    <a href="mailto:{{ support_email }}" style="color:#FFB264;">{{ support_email }}</a>
+                </p>
+                <p style="font-size:14px; line-height:1.5; color:#888; margin:8px 0 0;">
+                    С уважением,<br>команда <strong>{{ site_name }}</strong>
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

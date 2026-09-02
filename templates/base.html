@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Брус-16 — Главная</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='/css/font-awesome.min.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="{{ url_for('static', path='/favicon/favicon-96x96.png') }}" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/favicon/favicon.svg') }}" />
+  <link rel="shortcut icon" href="{{ url_for('static', path='/favicon/favicon.ico') }}" />
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', path='/favicon/apple-touch-icon.png') }}" />
+  {% block extra_links %}
+  {% endblock %}
+  {% block meta %}
+  {% endblock %}
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:site_name" content="Брус-16">
+  <script src="{{ url_for('static', path='alpine.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}">
+</head>
+<body x-data="{}">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-darker py-2">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{{ url_for('home') }}">
+      <img src="{{ url_for('static', path='/logo.svg') }}" alt="Брус-16" class="img-fluid" style="max-height: 1.5em;">
+    </a>
+    <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+      <li class="nav-item"><a class="nav-link active" href="{{ url_for('home') }}">Главная</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('posts') }}?type=новость">Новости</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('posts') }}?type=статья">Статьи</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('games') }}">Игры</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('get_ide') }}">IDE</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('get_cabinet') }}">Личный кабинет</a></li>
+    </ul>
+    {% if request.state.user %}<a href="{{ url_for('logout') }}" class="btn btn-outline-primary-custom">Выйти</a>{% endif %}
+    {% if not request.state.user %}<a href="{{ url_for('login') }}" class="btn btn-outline-primary-custom">Войти</a>{% endif %}
+  </div>
+</nav>
+
+<main>
+{% block content %}{% endblock %}
+</main>
+
+<footer class="bg-darker py-4 footer">
+  <div class="container text-center">
+    <div>
+      <a href="{{ url_for('terms_of_use') }}">Условия использования</a>
+    </div>
+    <div>
+      <a href="{{ url_for('privacy_policy') }}">Политика конфиденциальности</a>
+    </div>
+    <div>
+      <a href="mailto:support@brus16.ru"><i class="fas fa-envelope me-1"></i>support@brus16.ru</a>
+    </div>
+  </div>
+</footer>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-timestamp]').forEach(el => {
+        var isoString = el.dataset.timestamp;
+        if (!isoString.includes('Z') && !isoString.includes('+'))
+        {
+          isoString += 'Z';
+        }
+
+        const date = new Date(isoString);
+        
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        };
+        el.textContent = date.toLocaleString(undefined, options);
+    });
+});
+</script>
+{% block schema %}
+{% endblock %}
+</body>
+</html>

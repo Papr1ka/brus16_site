@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block extra_links %}
+<script src="{{ url_for('static', path='/bootstrap.bundle.min.js') }}"></script>
+
+<link rel="stylesheet" href="{{ url_for('static', path='/codemirror.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', path='/monokai.min.css') }}">
+<script src="{{ url_for('static', path='/codemirror.min.js') }}"></script>
+<script src="{{ url_for('static', path='/python.min.js') }}"></script>
+<script src="{{ url_for('static', path='split.min.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column" style="height: calc(100vh - 56px - 72px);">
+    <div class="row g-0 h-100">
+        <div id="left-panel" class="col-6 d-flex flex-column h-100">
+            <div class="p-2 border-bottom" style="border-color: #444 !important;">
+                <div class="d-flex align-items-center gap-2">
+                    <button id="compileBtn" class="btn btn-primary-custom">
+                        <i class="fa-solid fa-play me-2"></i>Запустить
+                    </button>
+                    <button id="downloadBtn" class="btn btn-primary-custom">
+                        <i class="fa-solid fa-file-arrow-down me-1"></i>Скачать .bin
+                    </button>
+                    <button id="loadZoomBtn" class="btn btn-primary-custom">
+                        <i class="fa-solid fa-floppy-disk me-1"></i>Zoom
+                    </button>
+                    <div id="statusIndicator" class="d-flex align-items-center">
+                        <span id="statusIcon" class="text-muted" style="font-size: 1.2rem;"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="editorContainer" class="flex-grow-1" style="min-height: 0; overflow: hidden;">
+                <textarea id="codeEditor"></textarea>
+            </div>
+        </div>
+
+        <div id="right-panel" class="col-6 d-flex flex-column h-100" style="border-left: 1px solid #444;">
+            <div id="top-panel" class="d-flex align-items-center justify-content-center p-2">
+                <div class="emulator-wrapper-vertical mb-4">
+                    <iframe id="emu" src="{{ url_for('static', path='brus16.html') }}" frameborder="0" width="100%" height="100%"></iframe>
+                </div>
+            </div>
+
+            <div id="bottom-panel" class="flex-grow-1 d-flex flex-column" style="min-height: 0; overflow: hidden;">
+                <ul class="nav nav-tabs small" style="border-color: #444;">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#outputTab" type="button" style="border-color: #444;;">
+                            <i class="fa-solid fa-terminal me-2"></i>Вывод
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#assemblyTab" type="button" style="border-color: #444;">
+                            <i class="fa-regular fa-file-code me-2"></i>Ассемблер
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content flex-grow-1" style="overflow: hidden;">
+                    <div class="tab-pane active h-100" id="outputTab" style="overflow-y: auto; padding: 0.5rem;">
+                        <div id="outputContainer" class="mono" style="white-space: pre-wrap;"></div>
+                    </div>
+                    <div class="tab-pane h-100" id="assemblyTab" style="overflow-y: auto; padding: 0.5rem;">
+                        <div id="assemblyContainer" class="mono" style="white-space: pre-wrap;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const zoom_code = `# Author: Peter Sovietov
+from brus16 import *
+
+save_game('zoom.bin', f'''
+def main():
+    while 1:
+        draw()
+        wait()
+
+def draw():
+    addr = {RECT_MEM}
+    j = 0
+    while j < 8:
+        i = 0
+        while i < 8:
+            addr[{RECT_X}] = w * (i - 4) + 320
+            addr[{RECT_Y}] = h * (j - 4) + 240
+            addr[{RECT_W}] = w
+            addr[{RECT_H}] = h
+            if w & 15 == 0:
+                addr[{RECT_COLOR}] = rnd()
+            addr += {RECT_SIZE}
+            i += 1
+        j += 1
+    w = (w & 255) + d
+    h = (h & 255) + d
+    if w & 255 == 0:
+        d = -d
+
+def rnd():
+    rnd_seed ^= rnd_seed << 7
+    rnd_seed ^= rnd_seed >> 9
+    rnd_seed ^= rnd_seed << 8
+    return rnd_seed
+
+rnd_seed = 1
+w = 0
+h = 0
+d = 1
+''')`
+
+    var game_bin = null;
+    const colors = {
+        info: '#f0f0f0',
+        error: '#f44',
+        success: '#198754'
+    };
+
+    function setOutput(container, text, type = 'info') {
+        const color = colors[type] || '#0f0';
+        const line = document.createElement('span');
+        line.style.color = color;
+        line.textContent = text;
+        container.innerHTML = "";
+        container.appendChild(line);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function base64ToUint8Array(base64) {
+        const binaryString = atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes;
+    }
+
+    (function() {
+        const editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+            mode: 'python',
+            theme: 'monokai',
+            lineNumbers: true,
+            indentUnit: 4,
+            tabSize: 4,
+            indentWithTabs: false,
+            lineWrapping: false,
+            autofocus: true,
+            extraKeys: {
+                "Ctrl-Space": "autocomplete"
+            }
+        });
+    const LS_KEY = "Brus-16_IDE_code";
+    let code = localStorage.getItem(LS_KEY);
+
+    if (code == null) {
+        editor.setValue(zoom_code);
+    } else {
+        editor.setValue(code)
+    }
+
+    editor.save = function() {
+        localStorage.setItem(LS_KEY, editor.getValue())
+    }
+    editor.on('change', () => editor.save())
+
+    function resizeEditor() {
+        const container = document.getElementById('editorContainer');
+        if (container) {
+            const rect = container.getBoundingClientRect();
+            editor.setSize(rect.width - 2, rect.height - 2);
+        }
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+        resizeEditor();
+    });
+    const container = document.getElementById('editorContainer');
+    if (container) {
+        resizeObserver.observe(container);
+    }
+
+    window.addEventListener('load', resizeEditor);
+    window.addEventListener('resize', resizeEditor);
+
+    const compileBtn = document.getElementById('compileBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const loadZoomBtn = document.getElementById('loadZoomBtn')
+    const statusIcon = document.getElementById('statusIcon');
+    const console_div = document.getElementById("outputContainer");
+    const asm_div = document.getElementById("assemblyContainer")
+
+    function setStatus(type, message) {
+        // type: 'loading', 'success', 'error', 'idle'
+        const icons = {
+            'idle': '',
+            'loading': `<i class="fa-regular fa-hourglass fa-spin-pulse" style="--fa-animation-timing: ease-in-out; color: ${colors[type]};"></i>`,
+            'success': `<i class="fa-regular fa-circle-check" style="color: ${colors[type]};"></i>`,
+            'error': `<i class="fa-solid fa-triangle-exclamation" style="color: ${colors[type]};"></i>`
+        };
+        statusIcon.innerHTML = icons[type] || '';
+    }
+
+    window.compile = async function() {
+        setStatus('loading');
+        setOutput(asm_div, "...", "info")
+        setOutput(console_div, "...", "info")
+        const code = editor.getValue();
+        const response = await fetch("/ide/compile", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({code: code})
+        });
+        const data = await response.json();
+
+        if (data.status == "success") {
+            setStatus('success');
+            setOutput(asm_div, data.asm, "info");
+            setOutput(console_div, data.message, "info");
+            bin = base64ToUint8Array(data.binary);
+            game_bin = bin;
+            emu.contentWindow.window.run_from_bytes(bin);
+            downloadBtn.disabled = false;
+        } else {
+            setStatus('error');
+            setOutput(asm_div, "Ошибка компиляции.", "error");
+            setOutput(console_div, data.message, "error");
+            game_bin = null;
+            downloadBtn.disabled = true;
+        }
+    }
+
+    compileBtn.addEventListener('click', window.compile);
+    loadZoomBtn.addEventListener('click', () => { editor.setValue(zoom_code); });
+
+    setStatus('idle');
+    setOutput(console_div, "Здесь будет вывод компилятора.", "info");
+    setOutput(asm_div, "Здесь будет код ассемблера.", "info");
+    downloadBtn.disabled = true;
+
+    function downloadURL(url, fileName) {
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.style = 'display: none';
+        a.click();
+        a.remove();
+    }
+
+    downloadBtn.addEventListener('click', () => {
+        if (!game_bin) {
+            return;
+        }
+        console.log(game_bin);
+        let blob = new Blob([game_bin], {
+            type: 'application/octet-stream'
+        });
+        let url = window.URL.createObjectURL(blob);
+        downloadURL(url, "game.bin");
+        setTimeout(function() {
+            return window.URL.revokeObjectURL(url);
+        }, 1000);
+    })
+})();
+</script>
+
+<script>
+Split(['#left-panel', '#right-panel'], {
+    sizes: [50, 50],
+    minSize: 200,
+    gutterSize: 16,
+    cursor: 'col-resize',
+});
+
+// Разделитель между эмулятором и выводом
+Split(['#top-panel', "#bottom-panel"], {
+    direction: 'vertical',
+    sizes: [50, 50],
+    minSize: 100,
+    gutterSize: 16,
+    cursor: 'row-resize',
+});
+
+</script>
+
+{% endblock %}
+

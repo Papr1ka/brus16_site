@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: brus16_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --bind 0.0.0.0
+    networks:
+      - default
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "4m"
+  
+  web:
+    build: .
+    container_name: brus16_web
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    env_file:
+      - ".env"
+    volumes:
+      - ./static:/app/static
+      - ./media:/app/media
+      - ./data:/app/data
+    networks:
+      - default
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "4m"
+
+  worker1:
+    build: .
+    container_name: brus16_compilation_worker
+    restart: unless-stopped
+    command: rq worker --url redis://redis:6379/0 compilation_queue
+    depends_on:
+      - redis
+    privileged: true
+    networks:
+      - default
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "4m"
+
+  worker2:
+    build: .
+    container_name: brus16_mail_worker
+    restart: unless-stopped
+    command: rq worker --url redis://redis:6379/0 mail_queue
+    depends_on:
+      - redis
+    networks:
+      - default
+    environment:
+      - SMTP_HOST=$SMTP_HOST
+      - SMTP_PORT=$SMTP_PORT
+      - SMTP_USER=$SMTP_USER
+      - SMTP_PASSWORD=$SMTP_PASSWORD
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "4m"
+  
+  nginx:
+    image: nginx:alpine
+    container_name: brus16_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./static:/usr/share/nginx/html/static
+      - ./media:/usr/share/nginx/html/media
+      - ./letsencrypt-webroot:/usr/share/nginx/html/letsencrypt
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - web
+    networks:
+      - default
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "4m"
+  
+  sqlite-web:
+    image: coleifer/sqlite-web:latest
+    container_name: brus16_admin
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+    environment:
+      - SQLITE_WEB_PASSWORD=$SQLITE_WEB_PASSWORD
+    command: >
+      sh -c "sqlite_web -p 8080 -H '0.0.0.0' -u '/admin' -P /data/brus16.db"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "4m"
+    networks:
+      - default
+
+volumes:
+  redis_data:
+
+networks:
+  default:
+    name: brus16_network

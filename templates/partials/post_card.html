@@ -1,0 +1,39 @@
+{% if type == "fluid" %}
+<div class="col-12">
+{% else %}
+<div class="col-lg-6">
+{% endif %}
+    <div class="card card-bg">
+        <div class="row g-0">
+            {% if post.preview_url %}
+                {% if type == "fluid" %}
+                    <div>
+                        <img src="/{{ post.preview_url }}" class="img-fluid rounded-start" alt="..." style="height: 100%; object-fit: cover;">
+                    </div>
+                {% else %}
+                    <img src="/{{ post.preview_url }}" class="card-img-top" alt="...">
+                {% endif %}
+            {% endif %}
+            <div>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="{{ url_for('post', post_id=post.id) }}">
+                            {% if post.pinned %}
+                                <i class="fa-solid fa-thumbtack"></i>
+                            {% endif %}
+                            {{ post.title }}
+                        </a>
+                    </h5>
+                    <div class="card-text">
+                        {% with object = post %}
+                            {% include 'partials/info.html' %}
+                        {% endwith %}
+                    </div>
+                    <p class="card-text">{{ post.summary }}</p>
+                    <a href="{{ url_for('post', post_id=post.id) }}" class="btn btn-outline-primary-custom btn-sm me-3">Читать далее</a>
+                    <a href="{{ url_for('post', post_id=post.id) }}#comments" class="text-decoration-none"><i class="fa-regular fa-message" style="vertical-align: center; color: var(--primary-color);"></i> {{ post.num_comments }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

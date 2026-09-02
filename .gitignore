@@ -1,0 +1,13 @@
+venv
+*.zip
+.env
+
+data/
+
+__pycache__
+
+
+media/
+todo.txt
+
+deploy.sh

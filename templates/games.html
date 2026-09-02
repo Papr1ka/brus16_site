@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                <h2>Игры</h2>
+                <a href="{{ url_for('upload_game') }}" class="btn filter-btn create h-fit ms-auto">Загрузить игру</a>
+            </div>
+
+            <div class="row g-4">
+                {% if not games %}
+                    <div class="col-12">
+                        <div class="card card-bg">
+                            <div class="card-body">
+                                <p class="card-text">Загрузите игру и будьте первым!</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% for game in games %}
+                    {% include "partials/game_card.html" %}
+                {% endfor %}
+            </div>
+        </div>
+
+        {% include "partials/sidebar.html" %}
+    </div>
+</div>
+
+{% endblock %}
+

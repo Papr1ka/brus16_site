@@ -1,0 +1,7 @@
+<p>
+    <small class="text-muted" data-timestamp="{{ object.created_at }}"></small> от 
+    <strong class="username me-2">{{ object.user.username if object.user else "неизвестного" }}</strong>
+    {% if comments %} 
+    <a href="#comments" class="text-decoration-none"><i class="fa-regular fa-message" style="vertical-align: center; color: var(--primary-color);"></i> {{ object.num_comments }}</a>
+    {% endif %}
+</p>

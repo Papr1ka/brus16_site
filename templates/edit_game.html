@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if request.state.user %}
+<div class="container my-4">
+    <h1 class="text-primary-custom">Загрузка игры</h1>
+    {% if create %}
+    <form action="{{ url_for('upload_game') }}" method="post" enctype="multipart/form-data">
+    {% else %}
+    <form action="{{ url_for('edit_game', game_id=game.id) }}" method="post" enctype="multipart/form-data">
+    {% endif %}
+        <div class="mb-4">
+            {% for type, message in messages %}
+            <div class="alert alert-{{ type }}" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            <label for="title" class="form-label text-light">{{ form.title.label }}</label>
+            <input type="text" name="title" id="title" class="form-control" placeholder="{{ form.title.description }}" value="{{ form.title.data }}">
+            {% with errors=form.errors.title %}
+                {% include 'partials/form_errors.html' %}
+            {% endwith %}
+        </div>
+        <div class="mb-3">
+            <label for="preview" class="form-label text-light">{{ form.preview.label }}</label>
+            <input type="file" name="preview" id="preview" class="form-control" accept="image/png, image/jpeg">
+            {% if game and game.preview_url %}
+                <div class="mt-2">
+                    <img src="/{{ game.preview_url }}" alt="Preview" class="img-fluid" style="max-width: 200px;">
+                </div>
+            {% endif %}
+            {% with errors=form.errors.preview %}
+                {% include 'partials/form_errors.html' %}
+            {% endwith %}
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label text-light">{{ form.description.label }}</label>
+            <textarea id="description" name="description" class="form-control" rows="3" placeholder="{{ form.description.description }}">{{ form.description.data }}</textarea>
+            {% with errors=form.errors.description %}
+                {% include 'partials/form_errors.html' %}
+            {% endwith %}
+        </div>
+        <div class="mb-3">
+            <label for="binary" class="form-label text-light">{{ form.binary.label }}</label>
+            <input type="file" name="binary" id="binary" class="form-control" accept=".bin">
+            {% with errors=form.errors.binary %}
+                {% include 'partials/form_errors.html' %}
+            {% endwith %}
+        </div>
+        {% if create %}
+            <input type="submit" name="action" class="btn btn-primary-custom" value="Загрузить игру">
+        {% else %}
+            <input type="submit" name="action" class="btn btn-outline-primary-custom me-2" value="Сохранить">
+            <input type="submit" name="action" class="btn btn-danger" value="Удалить">
+        {% endif %}
+    </form>
+</div>
+{% endif %}
+
+{% if not request.state.user %}
+<div class="container my-4">
+    <h1 class="text-primary-custom">Авторизуйтесь для загрузки игры</h1>
+</div>
+{% endif %}
+
+{% endblock %}

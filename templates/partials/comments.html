@@ -1,0 +1,39 @@
+<div class="comments-section mt-5">
+    <h4 id="comments">Комментарии</h4>
+
+    <div id="comments-container">
+        {% if comments %}
+            {% for comment in comments %}
+                <div class="comment-item mb-4">
+                    <div>
+                        <small class="text-muted" data-timestamp="{{ comment.created_at }}"></small> от 
+                        <strong class="text-light">{{ comment.user.username if comment.user else "неизвестный" }}</strong>
+                    </div>
+                    <div class="comment-body">
+                        {{ comment.content }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p style="font-style: italic;">Пока нет комментариев. Будьте первым!</p>
+        {% endif %}
+    </div>
+
+    {% if request.state.user %}
+        <div class="mt-4">
+            <form action="{{ url_for('upload_comment', type=type, id=id) }}" method="post">
+                <div class="mb-4">
+                    <textarea class="form-control" name="content" id="comment-content" rows="2" placeholder="Напишите комментарий..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary-custom">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span>Отправить</span>
+                </button>
+            </form>
+        </div>
+    {% else %}
+        <p class="mt-4">
+            <a href="{{ url_for('login') }}">Войдите</a>, чтобы оставить комментарий.
+        </p>
+    {% endif %}
+</div>

@@ -1,0 +1,18 @@
+<div @click="$refs.game_{{game.id}}_link.click()" class="game-card col-md-6 col-lg-4">
+    <div class="card card-bg h-100">
+        <img src="/{{ game.preview_url }}" class="card-img-top" alt="...">
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title">{{ game.title }}</h5>
+            <div class="card-text">
+                <strong class="username me-2">{{ game.user.username if game.user else "неизвестный" }}</strong>
+                <p>
+                    <small class="text-muted" data-timestamp="{{ game.created_at }}"></small>
+                </p>
+            </div>
+            <div class="d-flex align-items-center">
+                <a x-ref="game_{{game.id}}_link" href="{{ url_for('game', game_id=game.id) }}" class="btn btn-outline-primary-custom btn-sm h-fit me-3">Перейти</a>
+                <a href="{{ url_for('game', game_id=game.id) }}#comments" class="text-decoration-none"><i class="fa-regular fa-message" style="vertical-align: center; color: var(--primary-color);"></i> {{ game.num_comments }}</a>
+            </div>
+        </div>
+    </div>
+</div>

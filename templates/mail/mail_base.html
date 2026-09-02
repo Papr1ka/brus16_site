@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        * {
+            line-height: 1.5em;
+            color: #F0F0F0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        a {
+            color: #FFB264 !important;
+            text-decoration:none;
+        }
+        p {
+            margin-bottom: 16px;
+            font-size: 1em;
+        }
+    </style>
+</head>
+<body style="margin: 30px 0; padding:0; background:#2C2C2C;">
+    <table align="center" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px; background:#1A1A1A; margin:20px auto; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+        <tr>
+            <td style="padding:30px 30px 0px;">
+                <h1 style="font-size: 2em; margin: 0; color:#FFB264; border-bottom:2px solid #FFB264; padding-bottom:12px;">
+                    {% if title %}
+                        {{ title }}
+                    {% else %}
+                        {% block title %}
+                        {% endblock %}
+                    {% endif %}
+
+                </h1>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:0 30px 10px;">
+                {% if body %}
+                    {{ body | safe }}
+                {% else %}
+                    {% block body %}
+                    {% endblock %}
+                {% endif %}
+                {% if action %}
+                <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                    <tr>
+                        <td align="center" style="background:#CC4319; border-radius:4px;">
+                            <a href="{{ action.url }}" style="display:inline-block; padding:12px; color: #F0F0F0; font-weight:bold; border-radius:4px;">
+                                {{ action.text }}
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+                {% endif %}
+                <hr style="border:0; border-top:2px solid #FFB264; margin-top: 24px;">
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:0 30px 30px;">
+                <p style="font-size:14px; color:#888; margin:0;">
+                    Это письмо отправлено автоматически. Если у вас есть вопросы, напишите нам на 
+                    <a href="mailto:support@brus16.ru" style="color:#FFB264;">support@brus16.ru</a>.
+                </p>
+                <p style="font-size:14px; color:#888; margin:8px 0 0;">
+                    С уважением, команда <strong style="color: #888">Брус-16.</strong>
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

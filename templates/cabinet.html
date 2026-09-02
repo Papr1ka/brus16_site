@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+
+    <h1 class="text-primary-custom">Личный кабинет</h1>
+    <form action="{{ url_for('change_enable_notifications') }}" method="post" enctype="multipart/form-data">
+        <div class="mb-4">
+            {% for type, message in messages %}
+            <div class="alert alert-{{ type }}" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            <label for="username" class="form-label text-light">Ник</label>
+            <input disabled type="text" name="username" id="username" class="form-control" value="{{ request.state.user.username }}">
+        </div>
+        <div class="mb-3">
+            <label for="verified" class="form-label text-light">Может публиковаться без модерации</label>
+            <input disabled type="text" name="verified" id="verified" class="form-control" value="{{ 'Да' if request.state.user.verified else 'Нет' }}">
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label text-light">Почта</label>
+            <input disabled type="text" name="email" id="email" class="form-control" placeholder="{{ request.state.user.email }}" value="{{ request.state.user.email }}">
+        </div>
+        <div class="form-check form-switch mb-3">
+            <input type="checkbox" name="enable_notifications" id="enableNotifications" class="form-check-input" role="switch" {{ "checked" if form.enable_notifications.data }}>
+            <label for="enableNotifications" class="form-check-label text-light">{{ form.enable_notifications.label }}</label>
+            {% with errors=form.errors.enable_notifications %}
+                {% include 'partials/form_errors.html' %}
+            {% endwith %}
+        </div>
+        <button type="submit" name="action" class="btn btn-primary-custom">Сохранить</button>
+    </form>
+
+    {% if request.state.user.is_admin %}
+    <h2 class="text-primary-custom mt-4 mb-4">Администрирование</h2>
+    {% endif %}
+    <section class="container my-5">
+        <h3 class="text-primary-custom mb-4">Посты на модерации</h2>
+        {% if pending_posts %}
+            <div class="row g-4">
+                {% for post in pending_posts %}
+                    {% with type="small" %}
+                        {% include "partials/post_card.html" %}
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Нет постов на модерации</p>
+        {% endif %}
+    </section>
+
+    <section class="container my-5">
+        <h3 class="text-primary-custom mb-4">Игры на модерации</h2>
+        {% if pending_games %}
+            <div class="row g-4">
+                {% for game in pending_games %}
+                    {% with type="small" %}
+                        {% include "partials/game_card.html" %}
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Нет игр на модерации</p>
+        {% endif %}
+    </section>
+
+{% endblock %}

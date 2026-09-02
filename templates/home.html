@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<!-- <section class="container my-5 text-center">
+    <img src="{{ url_for('static', path='/fpga_720_preview_alt.png') }}" alt="Брус-16 на FPGA-плате Tang Nano 9K" class="img-fluid mb-4" style="max-width: 100%;">
+    <img src="{{ url_for('static', path='/logo.svg') }}" alt="Брус-16" class="img-fluid mb-4" style="max-width: 100%;">
+    <h1 class="display-5 fw-bold text-primary-custom">64 прямоугольника хватит всем!</h1>
+    <p class="lead text-light">
+        Брус-16 — это игровая приставка с открытой архитектурой, разработанная согласно принципам технической эстетики и минимализма. Здесь вы найдёте игры, руководства, статьи, сможете разрабатывать свои проекты и делиться результатами!
+    </p>
+    <div class="mt-4">
+        <a href="https://github.com/true-grue/Brus-16" class="btn btn-primary-custom me-2 mb-2">
+            <i class="mr-2"><img src="{{ url_for('static', path='/github.svg') }}" width="24px" height="24px"></i>Программная часть
+        </a>
+        <a href="https://github.com/Papr1ka/brus16" class="btn btn-primary-custom me-2 mb-2">
+            <i class="mr-2"><img src="{{ url_for('static', path='/github.svg') }}" width="24px" height="24px"></i>Аппаратная часть
+        </a>
+    </div>
+</section> -->
+
+{% if pinned %}
+<section class="container my-5">
+    <div class="row g-4">
+        {% for post in pinned %}
+            {% with type="small" %}
+                {% include "partials/post_card.html" %}
+            {% endwith %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if posts %}
+<section class="container my-5">
+    <h2 class="text-primary-custom mb-4">Последние новости</h2>
+    <div class="row g-4">
+        {% for post in posts %}
+            {% with type="small" %}
+                {% include "partials/post_card.html" %}
+            {% endwith %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if games %}
+<section class="container my-5">
+    <h2 class="text-primary-custom mb-4">Лучшие игры</h2>
+    <div class="row g-4">
+        {% for game in games %}
+            {% with type="small" %}
+                {% include "partials/game_card.html" %}
+            {% endwith %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
