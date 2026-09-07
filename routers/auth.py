@@ -142,6 +142,7 @@ async def gen_reset_password(request: Request):
     subject = f"Сброс пароля"
     template = templates.get_template("mail/mail_reset_password.html")
     mail = template.render({
+        'request': request,
         'reset_link': reset_link,
     })
 
@@ -161,7 +162,7 @@ async def reset_token_to_user(token):
     except (jwt.DecodeError, jwt.ExpiredSignatureError):
         return None
     
-    if exp < datetime.now(timezone.utc).timestamp():
+    if exp.timestamp() < datetime.now(timezone.utc).timestamp():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
     user = get_user_by_username(username)
