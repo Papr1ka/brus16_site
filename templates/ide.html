@@ -116,11 +116,17 @@ d = 1
 ''')`
 
     var default_code;
+    var load_from_url = false;
 
     const codeMatch = location.hash.match(/code=(.*)/);
     if (codeMatch) {
         try {
             default_code = LZString.decompressFromEncodedURIComponent(codeMatch[1]);
+            load_from_url = true;
+            const url = new URL(location.href);
+            url.searchParams.delete('code');
+            url.hash = '';
+            history.replaceState(null, '', url.toString());
         } catch (e) {
             console.log("Не удалось извлечь код из ссылки", e);
             default_code = zoom_code;
@@ -183,8 +189,8 @@ d = 1
         });
     const LS_KEY = "Brus-16_IDE_code";
     let code = localStorage.getItem(LS_KEY);
-
-    if (code == null) {
+    
+    if (code == null || load_from_url) {
         editor.setValue(default_code);
     } else {
         editor.setValue(code)
