@@ -8,6 +8,7 @@
 <script src="{{ url_for('static', path='/codemirror.min.js') }}"></script>
 <script src="{{ url_for('static', path='/python.min.js') }}"></script>
 <script src="{{ url_for('static', path='split.min.js') }}"></script>
+<script src="{{ url_for('static', path='lz-string.min.js') }}"></script>
 {% endblock %}
 
 {% block content %}
@@ -15,7 +16,7 @@
     <div class="row g-0 h-100">
         <div id="left-panel" class="col-6 d-flex flex-column h-100">
             <div class="p-2 border-bottom" style="border-color: #444 !important;">
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
                     <button id="compileBtn" class="btn btn-primary-custom">
                         <i class="fa-solid fa-play me-2"></i>Запустить
                     </button>
@@ -23,7 +24,10 @@
                         <i class="fa-solid fa-file-arrow-down me-1"></i>Скачать .bin
                     </button>
                     <button id="loadZoomBtn" class="btn btn-primary-custom">
-                        <i class="fa-solid fa-floppy-disk me-1"></i>Zoom
+                        <i class="fa-solid fa-floppy-disk me-1"></i>Сбросить
+                    </button>
+                    <button id="getURIBtn" class="btn btn-primary-custom">
+                        <i class="fa-solid fa-link me-1"></i>Поделиться кодом
                     </button>
                     <div id="statusIndicator" class="d-flex align-items-center">
                         <span id="statusIcon" class="text-muted" style="font-size: 1.2rem;"></span>
@@ -111,6 +115,20 @@ h = 0
 d = 1
 ''')`
 
+    var default_code;
+
+    const codeMatch = location.hash.match(/code=(.*)/);
+    if (codeMatch) {
+        try {
+            default_code = LZString.decompressFromEncodedURIComponent(codeMatch[1]);
+        } catch (e) {
+            console.log("Не удалось извлечь код из ссылки", e);
+            default_code = zoom_code;
+        }
+    } else {
+        default_code = zoom_code;
+    }
+
     var game_bin = null;
     const colors = {
         info: '#f0f0f0',
@@ -149,14 +167,25 @@ d = 1
             lineWrapping: false,
             autofocus: true,
             extraKeys: {
-                "Ctrl-Space": "autocomplete"
+                "Ctrl-Space": "autocomplete",
+                "Tab": function(cm) {
+                    if (cm.somethingSelected()) {
+                        cm.indentSelection("add");
+                    } else {
+                        var spacesPerTab = cm.getOption("indentUnit");
+                        var cursorPos = cm.getCursor().ch;
+                        var spacesToInsert = spacesPerTab - (cursorPos % spacesPerTab);
+                        var spaces = Array(spacesToInsert + 1).join(" ");
+                        cm.replaceSelection(spaces, "end", "+input");
+                    }
+                }
             }
         });
     const LS_KEY = "Brus-16_IDE_code";
     let code = localStorage.getItem(LS_KEY);
 
     if (code == null) {
-        editor.setValue(zoom_code);
+        editor.setValue(default_code);
     } else {
         editor.setValue(code)
     }
@@ -187,7 +216,8 @@ d = 1
 
     const compileBtn = document.getElementById('compileBtn');
     const downloadBtn = document.getElementById('downloadBtn');
-    const loadZoomBtn = document.getElementById('loadZoomBtn')
+    const loadZoomBtn = document.getElementById('loadZoomBtn');
+    const getURIBtn = document.getElementById('getURIBtn');
     const statusIcon = document.getElementById('statusIcon');
     const console_div = document.getElementById("outputContainer");
     const asm_div = document.getElementById("assemblyContainer")
@@ -233,7 +263,24 @@ d = 1
     }
 
     compileBtn.addEventListener('click', window.compile);
-    loadZoomBtn.addEventListener('click', () => { editor.setValue(zoom_code); });
+    loadZoomBtn.addEventListener('click', () => { editor.setValue(default_code); });
+    getURIBtn.addEventListener('click', () => {
+        let url = new URL(window.location.href);
+        let code = editor.getValue();
+
+        let compressedCode = LZString.compressToEncodedURIComponent(code)
+
+        url.searchParams.delete('code');
+        url.hash = `code=${compressedCode}`;
+
+        navigator.clipboard.writeText(url.toString())
+        .then(() => {
+            alert("URL скопирован в буфер обмена");
+        })
+        .catch((e) => {
+            alert("Не удалось скопировать URL в буфер обмена: " + e.message);
+        })
+    });
 
     setStatus('idle');
     setOutput(console_div, "Здесь будет вывод компилятора.", "info");
