@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Brus-16</title>
+<style>
+html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+canvas { display: block; margin: 0 auto; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body id="emu-body">
+<canvas id='canvas' tabindex="0"></canvas>
+<script type='text/javascript'>
+window.onload = function() {
+
+    let instance = null;
+    let gameData = null;
+    let canvas = null;
+
+    function run() {
+        canvas = document.getElementById('canvas');
+
+        canvas.onresize = function() {
+            canvas.width = window.innerWidth * window.devicePixelRatio;
+            canvas.height = window.innerHeight * window.devicePixelRatio;
+        };
+
+        Module({
+            canvas: canvas,
+            arguments: ["game.bin"],
+            onRuntimeInitialized: function() {
+                this.FS.writeFile("/game.bin", gameData);
+            }
+        }).then(inst => {
+            instance = inst;
+        });
+    }
+
+    window.on_quit = function() {
+        instance = null;
+        run();
+    };
+
+    window.run_from_url = async function(url) {
+        async function loadBinary(url) {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Ошибка загрузки: ${response.status} ${response.statusText}`);
+            }
+            gameData = new Uint8Array(await response.arrayBuffer());
+        }
+
+        await loadBinary(url);
+
+        if (instance) {
+            instance._quit();
+        } else {
+            run();
+        }
+    };
+
+    window.run_from_bytes = async function(bytes) {
+        gameData = bytes;
+
+        if (instance) {
+            instance._quit();
+        } else {
+            run();
+        }
+    };
+};
+
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>
