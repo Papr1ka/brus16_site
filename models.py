@@ -54,6 +54,11 @@ class Post(SQLModel, table=True):
     user: User = Relationship()
     comments: List["Comment"] = Relationship()
 
+class GameTag(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(unique=True)
+    games: List["Game"] = Relationship()
+
 class Game(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True, nullable=False)
     status: Status = Field(default=Status.draft)
@@ -64,6 +69,8 @@ class Game(SQLModel, table=True):
     votes: int = Field(default=0)
     created_at: datetime = Field(default_factory=utc_now)
     num_comments: int = Field(default=0)
+    tag_id: Optional[int] = Field(foreign_key="gametag.id", ondelete="SET NULL")
+    tag: Optional[GameTag] = Relationship()
 
     user_id: Optional[int] = Field(foreign_key="user.id")
     user: User = Relationship()

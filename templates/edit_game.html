@@ -50,6 +50,20 @@
                 {% include 'partials/form_errors.html' %}
             {% endwith %}
         </div>
+        {% if form.tag.choices %}
+        <div class="mb-3">
+            <label for="tag" class="form-label text-light">{{ form.tag.label }}</label>
+            <select id="tag" name="tag" class="form-select">
+                <option value="">Выберите тег</option>
+                {% for id, choice in form.tag.choices %}
+                    <option value="{{ id }}" {% if form.tag.data == id %}selected{% endif %}>{{ choice }}</option>
+                {% endfor %}
+            </select>
+            {% with errors=form.errors.tag %}
+                {% include 'partials/form_errors.html' %}
+            {% endwith %}
+        </div>
+        {% endif %}
         {% if create %}
             <input type="submit" name="action" class="btn btn-primary-custom" value="Загрузить игру">
         {% else %}

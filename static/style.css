@@ -94,7 +94,7 @@ a {
 .filter-btn { color: #F0F0F0; background-color: #606060; }
 .filter-btn:hover :not(:active) { background-color: #606060; color: var(--text-color); }
 .filter-btn.create { background-color: var(--accent-color); color: var(--text-color); border-color: var(--accent-color); }
-.filter-btn.create:hover { background-color: var(--accent-color-darker); }
+.filter-btn.create:hover { background-color: var(--accent-color-darker); border-color: var(--accent-color-darker); }
 
 .card-bg {
     background-color: var(--background-darker);
@@ -296,4 +296,20 @@ a {
 .gutter.gutter-vertical {
         background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFAQMAAABo7865AAAABlBMVEVHcEzMzMzyAv2sAAAAAXRSTlMAQObYZgAAABBJREFUeF5jOAMEEAIEEFwAn3kMwcB6I2AAAAAASUVORK5CYII=');
     cursor: row-resize;
+}
+
+.form-select:focus, .form-select:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0 var(--accent-color-darker);
+    border-color: var(--accent-color-darker);
+}
+
+.d-flex-medium {
+    display: flex;
+}
+
+@media (max-width: 432px) {
+    .d-flex-medium {
+        display: block;
+    }
 }

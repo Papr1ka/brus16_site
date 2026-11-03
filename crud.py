@@ -3,7 +3,7 @@ from sqlmodel import Session, select, desc, and_, delete
 from sqlalchemy.orm import selectinload
 
 from db import engine
-from models import User, Post, Game, Comment, Vote, PostType, Status
+from models import User, Post, Game, Comment, Vote, PostType, Status, GameTag
 
 # General
 
@@ -127,7 +127,7 @@ def get_game_by_title(title: str) -> Optional[User]:
 
 def get_game_by_id(game_id: int) -> Optional[Game]:
     with Session(engine) as session:
-        statement = select(Game).where(Game.id == game_id).options(selectinload(Game.user))
+        statement = select(Game).where(Game.id == game_id).options(selectinload(Game.user), selectinload(Game.tag))
         return session.exec(statement).first()
 
 def get_hitparade(limit: int = 10) -> List[Game]:
@@ -137,17 +137,21 @@ def get_hitparade(limit: int = 10) -> List[Game]:
             .where(Game.status == Status.published)
             .order_by(desc(Game.votes))
             .limit(limit)
-            .options(selectinload(Game.user))
+            .options(selectinload(Game.user), selectinload(Game.tag))
         )
         return session.exec(statement).all()
 
-def get_all_games(status: Status = None) -> List[Game]:
+def get_all_games(status: Status = None, tag_id: int = None) -> List[Game]:
     with Session(engine) as session:
+        statement = select(Game).where(Game.status == status)
+
+        if tag_id is not None and tag_id != 0:
+            statement = statement.where(Game.tag_id == tag_id)
+
         statement = (
-            select(Game)
-            .where(Game.status == status)
+            statement
             .order_by(desc(Game.created_at))
-            .options(selectinload(Game.user))
+            .options(selectinload(Game.user), selectinload(Game.tag))
         )
         return session.exec(statement).all()
 
@@ -158,7 +162,7 @@ def get_all_games_from_user(user_id: int, status: Status = None) -> List[Game]:
             .where(Game.user_id == user_id)
             .where(Game.status == status)
             .order_by(desc(Game.created_at))
-            .options(selectinload(Game.user))
+            .options(selectinload(Game.user), selectinload(Game.tag))
         )
         return session.exec(statement).all()
 
@@ -232,3 +236,10 @@ def delete_comments_for_game(game_id: int):
         )
         session.exec(statement)
         session.commit()
+
+# Game Tags
+
+def get_all_game_tags() -> List[GameTag]:
+    with Session(engine) as session:
+        statement = select(GameTag).order_by(GameTag.name)
+        return session.exec(statement).all()

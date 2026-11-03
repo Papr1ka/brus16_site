@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, status, Request, UploadFile
 from fastapi import Path as PathParam
+from fastapi import Query as QueryParam
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 import redis.exceptions
@@ -19,7 +20,8 @@ from crud import (
     toggle_vote,
     delete_instance,
     get_comments_for_game,
-    delete_comments_for_game
+    delete_comments_for_game,
+    get_all_game_tags
 )
 from markdown import markdown
 from config import Config
@@ -30,11 +32,16 @@ from db import mail_queue
 router = APIRouter(prefix="/games")
 templates = Jinja2Templates(directory=Config.TEMPLATES_ROOT)
 
+def set_game_tags_in_form(form):
+    game_tags = get_all_game_tags()
+    form.tag.choices = [(tag.id, tag.name) for tag in game_tags]
+    return form
 
 @router.get("/upload_game", name="upload_game")
 async def get_upload_game(request: Request):
+    form = set_game_tags_in_form(GameForm())
     return templates.TemplateResponse(request=request, name="edit_game.html", context={
-        "form": GameForm(),
+        "form": form,
         "create": True
     })
 
@@ -44,8 +51,7 @@ async def get_edit_game(request: Request, game_id: Annotated[int, PathParam()]):
     if not game:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Игра с таким идентификатором не найдена")
 
-    print(game)
-    form = GameForm(obj=game)
+    form = set_game_tags_in_form(GameForm(obj=game))
     form.preview.data = game.preview_url
     
     return templates.TemplateResponse(request=request, name="edit_game.html", context={
@@ -58,7 +64,7 @@ async def update_game_handler(request: Request, preview: UploadFile | None = Non
     user = request.state.user
     if not user:
         return templates.TemplateResponse(request=request, name="edit_game.html", context={
-            "form": GameForm(),
+            "form": set_game_tags_in_form(GameForm()),
         })
 
     form_data = await request.form()
@@ -82,15 +88,16 @@ async def update_game_handler(request: Request, preview: UploadFile | None = Non
             delete_instance(game)
             messages.append(("success", "Игра удалена"))
             return templates.TemplateResponse(request=request, name="edit_game.html", context={
-                "form": GameForm(),
-                "messages": messages
+                "form": set_game_tags_in_form(GameForm()),
+                "messages": messages,
+                "create": True
             })
 
     # create or update
-    form = GameForm(form_data)
+    form = set_game_tags_in_form(GameForm(form_data))
     if not form.validate():
         return templates.TemplateResponse(request=request, name="edit_game.html", context={
-            "form": form,
+            "form": set_game_tags_in_form(form),
             "create": action == "Загрузить игру",
             "game": game if action == "Сохранить" else None
         })
@@ -102,14 +109,14 @@ async def update_game_handler(request: Request, preview: UploadFile | None = Non
     ):
         messages.append(("danger", "Игра с таким названием уже существует"))
         return templates.TemplateResponse(request=request, name="edit_game.html", context={
-            "form": form,
+            "form": set_game_tags_in_form(form),
             "messages": messages,
             "create": action == "Загрузить игру",
             "game": game if action == "Сохранить" else None
         })
 
     if action == "Загрузить игру":
-        game = Game(**form.data)
+        game = Game(**form.data, tag_id=form.tag.data)
         game.preview_url = "tmp"
         game.bin_path = "tmp"
         game.user_id = user.id
@@ -119,7 +126,7 @@ async def update_game_handler(request: Request, preview: UploadFile | None = Non
         else:
             game.status = Status.moderation
     else:
-        game = Game.sqlmodel_update(game, form.data)
+        game = Game.sqlmodel_update(game, {**form.data, "tag_id": form.tag.data})
 
     game = update_instance(game)
     preview_path, binary_path = await save_game(str(game.id), preview, binary)
@@ -165,9 +172,9 @@ async def vote_game(request: Request, game_id: Annotated[int, PathParam()]):
     if not game:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Игра с таким идентификатором не найдена")
 
-    content = markdown(game.description)
     messages = []
     if not user:
+        content = markdown(game.description)
         messages.append(("danger", "Чтобы продвинуть игру, необходимо авторизоваться"))
         return templates.TemplateResponse(request=request, name="game.html", context={
                 "game": game,
@@ -177,16 +184,18 @@ async def vote_game(request: Request, game_id: Annotated[int, PathParam()]):
     else:
         toggle_vote(user.id, game.id)
 
-    return RedirectResponse(request.url_for("game", game_id=game.id), status_code=status.HTTP_308_PERMANENT_REDIRECT)
+    return RedirectResponse(request.url_for("game", game_id=game.id), status_code=status.HTTP_301_MOVED_PERMANENTLY)
 
 
 @router.get("/", name="games")
-async def get_games(request: Request):
-    games = get_all_games(status=Status.published)
+async def get_games(request: Request, tag: Annotated[int | None, QueryParam()] = None):
+    games = get_all_games(status=Status.published, tag_id=tag)
     top_games = get_hitparade()
+    game_tags = get_all_game_tags()
     return templates.TemplateResponse(request=request, name="games.html", context={
         "games": games,
-        "top_games": top_games
+        "top_games": top_games,
+        "game_tags": game_tags
     })
 
 @router.get("/approve_game/{game_id}", name="approve_game")

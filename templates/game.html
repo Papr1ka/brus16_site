@@ -24,6 +24,15 @@
         <h1 class="text-primary-custom">
             {{ game.title }}
         </h1>
+        <h4 class="mb-4">
+            <span class="badge" style="background-color: var(--accent-color);">
+                {% if game.tag %}
+                    {{ game.tag.name }}
+                {% else %}
+                    Тег не указан
+                {% endif %}
+            </span>
+        </h4>
         <p>
             {% with object = game, comments = True %}
                 {% include 'partials/info.html' %}
@@ -36,7 +45,7 @@
                 {% endif %}
                 <a href="{{ url_for('edit_game_with_id', game_id=game.id) }}" class="btn btn-primary-custom mb-4 me-2">
                     <i class="fa-solid fa-pencil"></i>
-                    <span>Изменить</span>
+                    <span>Изменить/Удалить</span>
                 </a>
             {% endif %}
             
@@ -56,6 +65,7 @@
                 <span class="rating-count"><span class="me-1">{{ game.votes }}</span>Продвинуть</span>
             </a>
         </div>
+
         <div class="mb-4 mt-4" style="display: flex; justify-content: center;">
             {% for type, message in messages %}
             <div class="alert alert-{{ type }}" role="alert">
