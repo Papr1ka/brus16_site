@@ -4,7 +4,7 @@
 
 {% if request.state.user %}
 <div class="container my-4">
-    <h1 class="text-primary-custom">Загрузка игры</h1>
+    <h1 class="text-primary-custom">Загрузка программы</h1>
     {% if create %}
     <form action="{{ url_for('upload_game') }}" method="post" enctype="multipart/form-data">
     {% else %}
@@ -65,7 +65,7 @@
         </div>
         {% endif %}
         {% if create %}
-            <input type="submit" name="action" class="btn btn-primary-custom" value="Загрузить игру">
+            <input type="submit" name="action" class="btn btn-primary-custom" value="Загрузить программу">
         {% else %}
             <input type="submit" name="action" class="btn btn-outline-primary-custom me-2" value="Сохранить">
             <input type="submit" name="action" class="btn btn-danger" value="Удалить">
@@ -76,7 +76,7 @@
 
 {% if not request.state.user %}
 <div class="container my-4">
-    <h1 class="text-primary-custom">Авторизуйтесь для загрузки игры</h1>
+    <h1 class="text-primary-custom">Авторизуйтесь для загрузки программы</h1>
 </div>
 {% endif %}
 

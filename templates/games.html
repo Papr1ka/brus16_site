@@ -5,7 +5,7 @@
     <div class="row">
         <div class="col-lg-8 mb-4">
             <div class="d-flex-medium flex-wrap gap-2 mb-4">
-                <h2>Игры</h2>
+                <h2>Программы</h2>
                 <form action="{{ url_for('games') }}" class="ms-auto btn-group" method="get">
                     <select id="tag" name="tag" class="h-fit form-select filter-btn create" style="width: auto; border-bottom-right-radius: 0; border-top-right-radius: 0;">
                         <option value="0">Все</option>
@@ -15,7 +15,7 @@
                     </select>
                     <button type="submit" class="btn mb-3 filter-btn create">Применить</button>
                 </form>
-                <a href="{{ url_for('upload_game') }}" class="btn filter-btn create h-fit">Загрузить игру</a>
+                <a href="{{ url_for('upload_game') }}" class="btn filter-btn create h-fit">Загрузить программу</a>
             </div>
 
             <div class="row g-4">
@@ -23,7 +23,7 @@
                     <div class="col-12">
                         <div class="card card-bg">
                             <div class="card-body">
-                                <p class="card-text">Загрузите игру и будьте первым!</p>
+                                <p class="card-text">Загрузите и будьте первым!</p>
                             </div>
                         </div>
                     </div>
