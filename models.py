@@ -57,7 +57,6 @@ class Post(SQLModel, table=True):
 class GameTag(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(unique=True)
-    games: List["Game"] = Relationship()
 
 class Game(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True, nullable=False)

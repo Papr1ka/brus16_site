@@ -50,16 +50,16 @@
                 {% include 'partials/form_errors.html' %}
             {% endwith %}
         </div>
-        {% if form.tag.choices %}
+        {% if form.tag_id.choices %}
         <div class="mb-3">
-            <label for="tag" class="form-label text-light">{{ form.tag.label }}</label>
-            <select id="tag" name="tag" class="form-select">
+            <label for="tag_id" class="form-label text-light">{{ form.tag_id.label }}</label>
+            <select id="tag_id" name="tag_id" class="form-select">
                 <option value="">Выберите тег</option>
-                {% for id, choice in form.tag.choices %}
-                    <option value="{{ id }}" {% if form.tag.data == id %}selected{% endif %}>{{ choice }}</option>
+                {% for id, choice in form.tag_id.choices %}
+                    <option value="{{ id }}" {% if form.tag_id.data == id %}selected{% endif %}>{{ choice }}</option>
                 {% endfor %}
             </select>
-            {% with errors=form.errors.tag %}
+            {% with errors=form.errors.tag_id %}
                 {% include 'partials/form_errors.html' %}
             {% endwith %}
         </div>

@@ -104,4 +104,4 @@ class GameForm(Form):
     ], default="", description="Описание программы в формате markdown")
     preview = FileField("Превью", [image_extension_requred])
     binary = FileField("Файл программы", [bin_extension])
-    tag = SelectField("Тег", [validators.DataRequired(message="Выберите тег")], description="Тег", coerce=int)
+    tag_id = SelectField("Тег", [validators.DataRequired(message="Выберите тег")], description="Тег", coerce=int)

@@ -34,7 +34,7 @@ templates = Jinja2Templates(directory=Config.TEMPLATES_ROOT)
 
 def set_game_tags_in_form(form):
     game_tags = get_all_game_tags()
-    form.tag.choices = [(tag.id, tag.name) for tag in game_tags]
+    form.tag_id.choices = [(tag.id, tag.name) for tag in game_tags]
     return form
 
 @router.get("/upload_game", name="upload_game")
@@ -70,13 +70,13 @@ async def update_game_handler(request: Request, preview: UploadFile | None = Non
     form_data = await request.form()
 
     action = form_data.get("action")
-    if action not in ("Загрузить игру", "Сохранить", "Удалить"):
+    if action not in ("Загрузить программу", "Сохранить", "Удалить"):
         raise HTTPException(status.HTTP_400_BAD_REQUEST)
 
     messages = []
     game = None
 
-    if action != "Загрузить игру":
+    if action != "Загрузить программу":
         game = get_game_by_id(game_id)
         if not game:
             raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Игра с таким идентификатором не найдена")
@@ -98,25 +98,25 @@ async def update_game_handler(request: Request, preview: UploadFile | None = Non
     if not form.validate():
         return templates.TemplateResponse(request=request, name="edit_game.html", context={
             "form": set_game_tags_in_form(form),
-            "create": action == "Загрузить игру",
+            "create": action == "Загрузить программу",
             "game": game if action == "Сохранить" else None
         })
 
     game_with_title = get_game_by_title(form.title.data)
     if (
-        game_with_title and action == "Загрузить игру") or (
+        game_with_title and action == "Загрузить программу") or (
         game_with_title and game_with_title.id != game.id and action == "Сохранить"
     ):
         messages.append(("danger", "Игра с таким названием уже существует"))
         return templates.TemplateResponse(request=request, name="edit_game.html", context={
             "form": set_game_tags_in_form(form),
             "messages": messages,
-            "create": action == "Загрузить игру",
+            "create": action == "Загрузить программу",
             "game": game if action == "Сохранить" else None
         })
 
-    if action == "Загрузить игру":
-        game = Game(**form.data, tag_id=form.tag.data)
+    if action == "Загрузить программу":
+        game = Game(**form.data)
         game.preview_url = "tmp"
         game.bin_path = "tmp"
         game.user_id = user.id
@@ -126,7 +126,7 @@ async def update_game_handler(request: Request, preview: UploadFile | None = Non
         else:
             game.status = Status.moderation
     else:
-        game = Game.sqlmodel_update(game, {**form.data, "tag_id": form.tag.data})
+        game = Game.sqlmodel_update(game, form.data)
 
     game = update_instance(game)
     preview_path, binary_path = await save_game(str(game.id), preview, binary)
